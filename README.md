@@ -12,10 +12,24 @@ Ujala is a smart traffic management system that uses a high-resolution camera an
 ## Directory Structure
 
 abhinavbaiju-ujala/
-├── README.md         # Project documentation
-├── LICENSE           # MIT License for the project
-├── traffic.py        # Main Python script for traffic detection and vehicle counting
-└── yolov8n.pt        # Pre-trained YOLOv8 model weights file
+ujala-traffic-system/  
+├── ai_processing/  
+│   ├── yolov8n.pt                # Pre-trained YOLOv8 model weights  
+│   ├── traffic_processor.py      # Main vehicle detection & serial comms  
+│   └── requirements.txt          # Python dependencies  
+├── arduino_control/  
+│   ├── traffic_controller/  
+│   │   ├── traffic_controller.ino # Primary Arduino control code  
+│   │   └── keywords.txt           # Arduino IDE syntax highlighting  
+│   └── lib/                      # Custom Arduino libraries  
+├── documentation/  
+│   ├── wiring_diagram.pdf        # Tinkercad-generated circuit schematic  
+│   ├── pin_mappings.md           # GPIO to LED matrix configuration  
+│   └── protocol_spec.md          # Serial communication specifications  
+├── test_assets/  
+│   ├── test_videos/              # Sample traffic footage  
+│   └── calibration_images/       # Camera calibration patterns  
+└── README.md                     # Comprehensive setup guide  
 
 ## Installation
 
