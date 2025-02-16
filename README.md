@@ -42,19 +42,19 @@ ujala/
 2. **Install required Python packages:**
 
    ```bash
-   pip install opencv-python numpy ultralytics
+   pip install opencv-python numpy ultralytics pyserial
    ```
 
 ## Usage
 
-1. Ensure the `yolov8n.pt` file is in the repository root alongside `traffic.py`.
+1. Ensure the `yolov8n.pt` file is in the repository root alongside `traffic_processor.py`.
 
-2. Modify the `image_path` in `traffic.py` to point to your test image (e.g., a snapshot of an intersection).
+2. Modify the `image_path` in `traffic_processor.py` to point to your test image (e.g., a snapshot of an intersection).
 
 3. Run the script:
 
    ```bash
-   python traffic.py
+   python traffic_processor.py
    ```
 
 4. The script will display the image with detected vehicles and region outlines, and print the vehicle counts for each region in the console.
