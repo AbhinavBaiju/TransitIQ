@@ -64,13 +64,32 @@ transitiq/
    cd TransitIQ
    ```
 
-2. **Install Python dependencies:**
+2. **Set up Python virtual environment:**
+   ```bash
+   python -m venv venv
+   ```
+
+3. **Activate the virtual environment:**
+   ```bash
+   # On Windows:
+   .\venv\Scripts\activate
+   
+   # On macOS/Linux:
+   source venv/bin/activate
+   ```
+
+4. **Install Python dependencies:**
    ```bash
    cd ai_processing
    pip install -r requirements.txt
    ```
 
-3. **Arduino Setup:**
+5. **Run the traffic analysis script:**
+   ```bash
+   python traffic_markers.py
+   ```
+
+6. **Arduino Setup:**
    - Open `arduino_control/traffic_controller/traffic_controller.ino` in Arduino IDE
    - Install required Arduino libraries through Library Manager
    - Upload the code to your Arduino board
