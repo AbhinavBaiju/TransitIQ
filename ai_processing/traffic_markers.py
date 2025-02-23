@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 import requests
 from serial import Serial
-from serialtransfer import SerialTransfer
+from pySerialTransfer.pySerialTransfer import SerialTransfer
 
 # This module implements traffic detection using ArUco marker-based lane detection.
 # It uses YOLOv3 for car detection and ArUco markers to define lane boundaries.
