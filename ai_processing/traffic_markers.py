@@ -217,9 +217,22 @@ class TrafficAnalyzerApp:
         YOLODownloader(self.model_dir).download_files()
         yolomodel = YOLOModel(self.model_dir)
         
-        img = cv2.imread(self.image_path)
-        if img is None:
-            raise FileNotFoundError(f"Could not load image at {self.image_path}")
+        # Try to initialize USB camera
+        cap = cv2.VideoCapture(0)  # Try to open the default camera (index 0)
+        if not cap.isOpened():
+            print("Could not access USB camera. Falling back to image file.")
+            img = cv2.imread(self.image_path)
+            if img is None:
+                raise FileNotFoundError(f"Could not load image at {self.image_path}")
+        else:
+            print("USB camera initialized successfully.")
+            ret, img = cap.read()
+            if not ret:
+                print("Failed to capture frame from camera. Falling back to image file.")
+                img = cv2.imread(self.image_path)
+                if img is None:
+                    raise FileNotFoundError(f"Could not load image at {self.image_path}")
+            cap.release()
         
         boxes, _, _, indexes = yolomodel.detect(img)
         
