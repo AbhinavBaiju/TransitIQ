@@ -1,5 +1,5 @@
-opencv-python==4.9.0.80
-numpy==1.26.4
-ultralytics==8.1.0
-pyserial==3.5
-pySerialTransfer==1.4
+opencv-python
+numpy
+ultralytics
+pyserial
+requests
