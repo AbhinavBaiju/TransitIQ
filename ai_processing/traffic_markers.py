@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import requests
 from serial import Serial
+from serialtransfer import SerialTransfer
 
 # This module implements traffic detection using ArUco marker-based lane detection.
 # It uses YOLOv3 for car detection and ArUco markers to define lane boundaries.
@@ -240,9 +241,26 @@ class TrafficAnalyzerApp:
 
     def send_serial_data(self, lane_counts):
         try:
-            print(f"[Debug] Would send car counts: N={lane_counts.get('North', 0)}, S={lane_counts.get('South', 0)}, E={lane_counts.get('East', 0)}, W={lane_counts.get('West', 0)}")
-            # Bypassing actual serial communication for debugging
-            pass
+            # Create a SerialTransfer object
+            xfer = SerialTransfer(self.serial_port)
+            xfer.open()
+
+            # Create a struct that matches Arduino's data structure
+            class CarCounts(object):
+                def __init__(self):
+                    self.north = lane_counts.get("North", 0)
+                    self.south = lane_counts.get("South", 0)
+                    self.east = lane_counts.get("East", 0)
+                    self.west = lane_counts.get("West", 0)
+
+            # Send data using SerialTransfer
+            counts = CarCounts()
+            xfer.send(counts)
+            print(f"Sent car counts: N={counts.north}, S={counts.south}, E={counts.east}, W={counts.west}")
+            
+            # Close the connection
+            xfer.close()
+                
         except Exception as e:
             print(f"Serial communication error: {str(e)}")
 
