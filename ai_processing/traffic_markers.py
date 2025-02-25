@@ -217,63 +217,116 @@ class TrafficAnalyzerApp:
         YOLODownloader(self.model_dir).download_files()
         yolomodel = YOLOModel(self.model_dir)
         
-        # Initialize serial communication
-        xfer = SerialTransfer(self.serial_port)
-        xfer.open()
+        # Initialize serial communication with fallback
+        xfer = None
+        available_ports = ['/dev/cu.usbserial', '/dev/cu.usbmodem', self.serial_port]
+        
+        for port in available_ports:
+            try:
+                xfer = SerialTransfer(port)
+                xfer.open()
+                print(f"Successfully connected to serial port: {port}")
+                break
+            except Exception as e:
+                print(f"Failed to connect to {port}: {str(e)}")
+                continue
+        
+        if xfer is None:
+            print("Warning: No serial connection available. Running in simulation mode.")
+            # Create a mock SerialTransfer for simulation
+            class MockSerialTransfer:
+                def send(self, data):
+                    print(f"[SIMULATION] Would send: {data.__dict__}")
+                def rxObj(self, obj):
+                    return True
+                def close(self):
+                    pass
+            xfer = MockSerialTransfer()
         
         try:
             while True:  # Continuous processing loop
-                # Try to initialize DroidCam (usually appears as camera index 1 or 2)
-                camera_indices = [1, 2, 0]  # Try DroidCam indices first, then fallback to default
-                cap = None
+                # Ask user for input source
+                input_source = input("Enter 'P' for placeholder image or 'C' for camera: ").upper()
                 
-                for idx in camera_indices:
-                    cap = cv2.VideoCapture(idx)
-                    if cap.isOpened():
-                        print(f"Successfully connected to camera at index {idx}")
-                        ret, img = cap.read()
-                        if ret:
-                            break
-                    cap.release()
-                
-                if cap is None or not ret:
-                    print("Could not access any camera. Falling back to image file.")
+                if input_source == 'P':
+                    print("Using placeholder image from test_assets...")
                     img = cv2.imread(self.image_path)
                     if img is None:
                         raise FileNotFoundError(f"Could not load image at {self.image_path}")
+                elif input_source == 'C':
+                    print("Attempting to connect to camera...")
+                    # Try to initialize DroidCam (usually appears as camera index 1 or 2)
+                    camera_indices = [1, 2, 0]  # Try DroidCam indices first, then fallback to default
+                    cap = None
+                    
+                    for idx in camera_indices:
+                        cap = cv2.VideoCapture(idx)
+                        if cap.isOpened():
+                            print(f"Successfully connected to camera at index {idx}")
+                            ret, img = cap.read()
+                            if ret:
+                                break
+                        cap.release()
+                    
+                    if cap is None or not ret:
+                        print("Could not access any camera. Please try again.")
+                        continue
+                    else:
+                        print("Camera frame captured successfully.")
+                        cap.release()
                 else:
-                    print("Camera frame captured successfully.")
-                    cap.release()
+                    print("Invalid input. Please enter 'P' or 'C'.")
+                    continue
                 
                 boxes, _, _, indexes = yolomodel.detect(img)
                 
                 centers = []
-                for i in indexes.flatten():
-                    x, y, w_box, h_box = boxes[i]
-                    centers.append((x + w_box//2, y + h_box//2))
-                
+                if not isinstance(indexes, np.ndarray):
+                    indexes = np.array([])
                 analyzer = LaneAnalyzer()
-                lane_counts, lane_polygons = analyzer.count_cars(centers, img)
                 
-                print(f"\nTotal Cars Detected: {len(indexes.flatten())}")
-                print("Breakdown of Cars in Each Lane:")
-                for lane in ["North", "South", "East", "West"]:
-                    print(f"{lane}: {lane_counts[lane]}")
-                
-                # Send car counts to Arduino
-                class CarCounts(object):
-                    def __init__(self):
-                        self.north = lane_counts.get("North", 0)
-                        self.south = lane_counts.get("South", 0)
-                        self.east = lane_counts.get("East", 0)
-                        self.west = lane_counts.get("West", 0)
-                
-                counts = CarCounts()
-                xfer.send(counts)
-                print(f"Sent car counts: N={counts.north}, S={counts.south}, E={counts.east}, W={counts.west}")
-                
-                # Show detections while waiting for Arduino's signal
-                self._show_detections(img, boxes, indexes, lane_polygons)
+                try:
+                    # Always attempt to get lane polygons, regardless of car detection
+                    lane_counts, lane_polygons = analyzer.count_cars(centers, img)
+                    
+                    if indexes.size > 0:
+                        for i in indexes.flatten():
+                            x, y, w_box, h_box = boxes[i]
+                            centers.append((x + w_box//2, y + h_box//2))
+                        print(f"\nTotal Cars Detected: {len(indexes.flatten())}")
+                    else:
+                        print("No cars detected in the image.")
+                        # Ask for manual input when no cars are detected
+                        print("\nPlease enter manual car counts:")
+                        lane_counts = {
+                            "North": int(input("Number of cars in North lane: ")),
+                            "South": int(input("Number of cars in South lane: ")),
+                            "East": int(input("Number of cars in East lane: ")),
+                            "West": int(input("Number of cars in West lane: "))
+                        }
+                    
+                    print("\nBreakdown of Cars in Each Lane:")
+                    for lane in ["North", "South", "East", "West"]:
+                        print(f"{lane}: {lane_counts[lane]}")
+                    
+                    # Send car counts to Arduino
+                    class CarCounts(object):
+                        def __init__(self):
+                            self.north = lane_counts.get("North", 0)
+                            self.south = lane_counts.get("South", 0)
+                            self.east = lane_counts.get("East", 0)
+                            self.west = lane_counts.get("West", 0)
+                    
+                    counts = CarCounts()
+                    xfer.send(counts)
+                    print(f"Sent car counts: N={counts.north}, S={counts.south}, E={counts.east}, W={counts.west}")
+                    
+                    # Show detections with lane polygons
+                    self._show_detections(img, boxes, indexes, lane_polygons)
+                    
+                except ValueError as e:
+                    print(f"Error detecting lanes: {str(e)}")
+                    continue
                 
                 # Wait for Arduino's ready signal
                 print("Waiting for Arduino to complete traffic light cycle...")
