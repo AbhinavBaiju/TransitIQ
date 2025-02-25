@@ -89,5 +89,8 @@ void loop() {
       delay(5000);
       currentDir = (currentDir + 1) % 4;
     }
+    
+    // Send ready signal back to Python
+    xfer.txObj(true);
   }
 }
