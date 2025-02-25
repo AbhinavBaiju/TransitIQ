@@ -283,6 +283,16 @@ class TrafficAnalyzerApp:
                 centers = []
                 if not isinstance(indexes, np.ndarray):
                     indexes = np.array([])
+                
+                # Collect car centers before lane analysis
+                if indexes.size > 0:
+                    for i in indexes.flatten():
+                        x, y, w_box, h_box = boxes[i]
+                        centers.append((x + w_box//2, y + h_box//2))
+                    print(f"\nTotal Cars Detected: {len(indexes.flatten())}")
+                else:
+                    print("No cars detected in the image.")
+                
                 analyzer = LaneAnalyzer()
                 
                 try:
@@ -391,7 +401,7 @@ if __name__ == "__main__":
     
     app = TrafficAnalyzerApp(
         model_dir=model_dir,
-        image_path=project_dir / "test_assets" / "Traffic_Markers.png",
+        image_path=project_dir / "test_assets" / "Traffic_Real_Final.png",
         serial_port="/dev/ttyUSB0"  # Update to your Arduino's port
     )
     app.run()
