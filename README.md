@@ -148,7 +148,17 @@ For questions, issues, or collaboration opportunities, please open an issue on G
 The system employs ArUco markers for precise traffic zone definition and analysis. These markers serve as reference points to map and track distinct traffic zones at intersections.
 
 ![Traffic Analysis with Markers](test_assets/Traffic_Markers.png)
+![Traffic Analysis with Markers](test_assets/Traffic_Real2.png)
 *ArUco markers define distinct traffic zones for vehicle detection and counting*
+
+## Lane Marker IDs
+
+| Direction | Marker IDs | Marker Images |
+|-----------|------------|---------------|
+| North | 0, 1, 2, 3 | ![M0](aruco_markers/M0.svg) ![M1](aruco_markers/M1.svg) ![M2](aruco_markers/M2.svg) ![M3](aruco_markers/M3.svg) |
+| South | 4, 5, 6, 7 | ![M4](aruco_markers/M4.svg) ![M5](aruco_markers/M5.svg) ![M6](aruco_markers/M6.svg) ![M7](aruco_markers/M7.svg) |
+| East | 8, 9, 10, 11 | ![M8](aruco_markers/M8.svg) ![M9](aruco_markers/M9.svg) ![M10](aruco_markers/M10.svg) ![M11](aruco_markers/M11.svg) |
+| West | 12, 13, 14, 15 | ![M12](aruco_markers/M12.svg) ![M13](aruco_markers/M13.svg) ![M14](aruco_markers/M14.svg) ![M15](aruco_markers/M15.svg) |
 
 ### Masking-Based Analysis
 In addition to marker-based analysis, the system supports region masking for defining specific areas of interest. This approach allows for flexible zone definition through mask templates.
